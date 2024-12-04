@@ -1,16 +1,18 @@
 import bcrypt from "bcryptjs";
-import mongoose, { CallbackError } from "mongoose";
+import mongoose, { CallbackError, Model, Schema } from "mongoose";
+import { IUser } from "../constants/interfaces/user";
 import { checkPasswordStrength } from "../utils";
 
-const userSchema = new mongoose.Schema({
+interface IUserModel extends Model<IUser> {
+  getByCredentials: (email: string, password: string) => Promise<IUser | null>;
+}
+
+const userSchema: Schema<IUser> = new Schema({
   provider: {
     type: String,
-    required: true,
   },
-  id: {
+  username: {
     type: String,
-    unique: true,
-    required: true,
   },
   firstName: {
     type: String,
@@ -21,6 +23,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   photo: {
     type: String,
@@ -50,9 +53,16 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.authenticate = async function (candidatePassword: string) {
-  return bcrypt.compare(candidatePassword, this.password);
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model("User", userSchema);
+userSchema.statics.getByCredentials = async function (email, password) {
+  const user = await this.findOne({ email });
+  if (!user) return null;
+
+  return (await user.authenticate(password)) ? user : null;
+};
+
+const User = mongoose.model<IUser, IUserModel>("User", userSchema);
 
 export default User;

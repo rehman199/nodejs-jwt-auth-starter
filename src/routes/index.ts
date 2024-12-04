@@ -6,4 +6,5 @@ import { usersRouter } from "./user";
 export const mainRouter = express.Router();
 
 mainRouter.use(authRoute, authRouter);
+
 mainRouter.use(usersRoute, usersRouter);

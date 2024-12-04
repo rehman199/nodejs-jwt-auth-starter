@@ -5,7 +5,7 @@ import { getCurrentUser } from "../controllers/user";
 export const usersRouter = express.Router();
 
 usersRouter.get(
-  "me",
+  "/me",
   passport.authenticate("jwt", { session: false }),
   getCurrentUser,
 );

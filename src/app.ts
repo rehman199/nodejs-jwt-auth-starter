@@ -33,3 +33,7 @@ app.use(
 );
 
 app.use(mainRouter);
+
+app.use((_req, res) => {
+  res.status(404).json({ error: "API not found" });
+});
